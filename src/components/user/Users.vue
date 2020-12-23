@@ -41,7 +41,7 @@
             <el-button type="danger" icon="el-icon-delete" size="mini" @click="removeUserById(scope.row.userId)"></el-button>
             <!--分配权限按钮-->
             <el-tooltip effect="dark" content="分配角色" placement="top" :enterable="false">
-              <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
+              <el-button type="warning" icon="el-icon-setting" size="mini" @click="setRole(scope.row)"></el-button>
             </el-tooltip>
           </template>
         </el-table-column>
@@ -102,9 +102,34 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-    <el-button @click="editDialogVisible = false">取 消</el-button>
-    <el-button type="primary" @click="editUserInfo">确 定</el-button>
-  </span>
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editUserInfo">确 定</el-button>
+      </span>
+    </el-dialog>
+
+    <!--分配角色的对话框-->
+    <el-dialog
+      title="分配角色"
+      :visible.sync="setRoleDialogVisible"
+      width="50%" @close="setRoleDialogClosed()">
+      <div>
+        <p>当前用户：{{userInfo.userName}}</p>
+        <p>当前角色：{{userInfo.roleName}}</p>
+        <p>分配新角色：
+          <el-select v-model="selectedRoleId" placeholder="请选择">
+            <el-option
+              v-for="item in roleList"
+              :key="item.roleId"
+              :label="item.roleName"
+              :value="item.roleId">
+            </el-option>
+          </el-select>
+        </p>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="setRoleDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="saveRoleInfo()">确 定</el-button>
+      </span>
     </el-dialog>
   </div>
 
@@ -175,7 +200,11 @@ export default {
         ]
       },
       editDialogVisible: false,
-      editUserForm: {}
+      editUserForm: {},
+      setRoleDialogVisible: false,
+      userInfo: {},
+      roleList: [],
+      selectedRoleId: ''
     }
   },
   created () {
@@ -273,6 +302,33 @@ export default {
       if (meta.code !== 200) return this.$message.error(meta.message)
       this.$message.success(meta.message)
       this.getUserList()
+    },
+    async setRole (user) {
+      this.userInfo = user
+      const { data: res } = await this.$http.get('/role/list')
+      const { data: list, meta } = res
+      if (meta.code !== 200) return this.$message.error(meta.message)
+      this.roleList = list
+      console.log(this.roleList)
+      this.setRoleDialogVisible = true
+    },
+    async saveRoleInfo () {
+      console.log('haha')
+      if (!this.selectedRoleId) {
+        return this.$message.error('请选择要分配的角色!')
+      }
+      this.userInfo.roleId = this.selectedRoleId
+      const { data: res } = await this.$http.post('/user/update', this.userInfo)
+      const { data, meta } = res
+      if (meta.code !== 200) return this.$message.error(meta.message)
+      console.log(data)
+      this.$message.success(meta.message)
+      this.setRoleDialogVisible = false
+      this.getUserList()
+    },
+    setRoleDialogClosed () {
+      this.selectedRoleId = ''
+      this.userInfo = {}
     }
   }
 }
