@@ -27,7 +27,7 @@
               <!--图标-->
               <i :class="iconsObj[item.id]"></i>
               <!--文本-->
-              <span>{{item.name}}}</span>
+              <span>{{item.name}}</span>
             </template>
             <!--二级菜单-->
             <el-menu-item :index=" '/' + subitem.controller + ''" v-for="subitem in item.children" :key="subitem.id" @click="saveNavState('/' + subitem.controller + '')">
@@ -35,7 +35,7 @@
                 <!--图标-->
                 <i class="el-icon-menu"></i>
                 <!--文本-->
-                <span>{{subitem.name}}}</span>
+                <span>{{subitem.name}}</span>
               </template>
             </el-menu-item>
           </el-submenu>
