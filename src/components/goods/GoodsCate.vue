@@ -42,8 +42,8 @@
           <el-tag size="mini" type="warning" v-else>三级</el-tag>
         </template>
         <template slot="opt" slot-scope="scope">
-          <el-button size="mini" type="primary" icon="el-icon-edit">编辑</el-button>
-          <el-button size="mini" type="danger" icon="el-icon-delete">删除</el-button>{{scope.row.isShow}}
+          <el-button size="mini" type="primary" icon="el-icon-edit" @click="showEditCatsDialog(scope.row)">编辑</el-button>
+          <el-button size="mini" type="danger" icon="el-icon-delete" @click="removeCatsById(scope.row.catId)">删除</el-button>
         </template>
       </tree-table>
       <!--分页区域-->
@@ -78,9 +78,33 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-    <el-button @click="addCatDialogVisible = false">取 消</el-button>
-    <el-button type="primary" @click="addCat">确 定</el-button>
-  </span>
+          <el-button @click="addCatDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="addCat">确 定</el-button>
+      </span>
+    </el-dialog>
+
+    <!--编辑商品分类对话框-->
+    <el-dialog
+      title="编辑分类信息"
+      :visible.sync="editGoodCatsDialogVisible"
+      width="50%">
+      <!--添加分类的表单-->
+      <el-form :model="editCatForm" :rules="editCatFormRule" ref="editCatFormRef" label-width="100px">
+        <el-form-item label="分类名称" prop="catName">
+          <el-input v-model="editCatForm.catName"></el-input>
+        </el-form-item>
+        <el-form-item label="父级分类">
+          <el-cascader
+            v-model="selectedKeys"
+            :options="parentCatList"
+            :props="cascaderProps"
+            @change="editParentCatChange" clearable show-all-levels></el-cascader>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editGoodCatsDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editCat">确 定</el-button>
+      </span>
     </el-dialog>
   </div>
 </template>
@@ -135,7 +159,14 @@ export default {
         expandTrigger: 'hover',
         checkStrictly: true
       },
-      selectedKeys: []
+      selectedKeys: [],
+      editGoodCatsDialogVisible: false,
+      editCatForm: {},
+      editCatFormRule: {
+        catName: [
+          { required: true, message: '请输入分类名称', trigger: 'blur' }
+        ]
+      }
     }
   },
   name: 'GoodsCate',
@@ -167,11 +198,9 @@ export default {
       const { data: res } = await this.$http.get('/categories/plist')
       const { data: list, meta } = res
       if (meta.code !== 200) return this.$message.error(meta.message)
-      console.log(list)
       this.parentCatList = list
     },
     parentCatChange () {
-      console.log(this.selectedKeys)
       if (this.selectedKeys.length > 0) {
         this.addCatForm.pCatId = this.selectedKeys[this.selectedKeys.length - 1]
         this.addCatForm.catSort = this.selectedKeys.length
@@ -198,6 +227,55 @@ export default {
       this.selectedKeys = []
       this.addCatForm.catSort = 0
       this.addCatForm.pCatId = 0
+    },
+    showEditCatsDialog (row) {
+      this.editGoodCatsDialogVisible = true
+      this.editCatForm = row
+      this.getParentCatList()
+      console.log(this.editCatForm)
+    },
+    editParentCatChange () {
+      if (this.selectedKeys.length > 0) {
+        this.editCatForm.pCatId = this.selectedKeys[this.selectedKeys.length - 1]
+        this.editCatForm.catSort = this.selectedKeys.length
+      } else {
+        this.editCatForm.pCatId = 0
+        this.editCatForm.catSort = 0
+      }
+    },
+    editCat () {
+      this.$refs.editCatFormRef.validate(async valid => {
+        if (!valid) return
+        const { data: res } = await this.$http.post('/categories/update', this.editCatForm)
+        const { data, meta } = res
+        if (meta.code !== 200) return this.$message.error(meta.message)
+        console.log(data)
+        this.$message.success(meta.message)
+        this.selectedKeys = []
+        this.editGoodCatsDialogVisible = false
+        console.log(this.editCatForm)
+        this.getGoodsCateList()
+      })
+    },
+    async removeCatsById (catId) {
+      const res = await this.$confirm('此操作将永久删除该分类及子分类, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+        center: true
+      }).catch(err => {
+        return err
+      })
+      if (res !== 'confirm') {
+        return this.$message.info('已取消删除分类操作！')
+      }
+      this.queryInfo.catId = catId
+      const { data: da } = await this.$http.post('/categories/delete', this.queryInfo)
+      const { data, meta } = da
+      console.log(data)
+      if (meta.code !== 200) return this.$message.error(meta.message)
+      this.$message.success(meta.message)
+      this.getGoodsCateList()
     }
   }
 }
