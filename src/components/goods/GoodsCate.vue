@@ -62,7 +62,8 @@
     <el-dialog
       title="添加分类"
       :visible.sync="addCatDialogVisible"
-      width="50%">
+      width="50%"
+    @close="addCatDiaologClosed">
       <!--添加分类的表单-->
       <el-form :model="addCatForm" :rules="addCatFormRule" ref="addCatFormRef" label-width="100px">
         <el-form-item label="分类名称" prop="catName">
@@ -78,7 +79,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
     <el-button @click="addCatDialogVisible = false">取 消</el-button>
-    <el-button type="primary" @click="addCatDialogVisible = false">确 定</el-button>
+    <el-button type="primary" @click="addCat">确 定</el-button>
   </span>
     </el-dialog>
   </div>
@@ -131,7 +132,8 @@ export default {
         value: 'catId',
         label: 'catName',
         children: 'children',
-        expandTrigger: 'hover'
+        expandTrigger: 'hover',
+        checkStrictly: true
       },
       selectedKeys: []
     }
@@ -168,8 +170,34 @@ export default {
       console.log(list)
       this.parentCatList = list
     },
-    parentCatChange (selectedKeys) {
-      console.log(selectedKeys)
+    parentCatChange () {
+      console.log(this.selectedKeys)
+      if (this.selectedKeys.length > 0) {
+        this.addCatForm.pCatId = this.selectedKeys[this.selectedKeys.length - 1]
+        this.addCatForm.catSort = this.selectedKeys.length
+      } else {
+        this.addCatForm.pCatId = 0
+        this.addCatForm.catSort = 0
+      }
+    },
+    addCat () {
+      this.$refs.addCatFormRef.validate(async valid => {
+        if (!valid) return
+        const { data: res } = await this.$http.post('/categories/save', this.addCatForm)
+        const { data, meta } = res
+        console.log(data)
+        if (meta.code !== 200) return this.$message.error(meta.message)
+        this.addCatDialogVisible = false
+        this.$message.success(meta.message)
+        this.getGoodsCateList()
+      })
+      console.log(this.addCatForm)
+    },
+    addCatDiaologClosed () {
+      this.$refs.addCatFormRef.resetFields()
+      this.selectedKeys = []
+      this.addCatForm.catSort = 0
+      this.addCatForm.pCatId = 0
     }
   }
 }
