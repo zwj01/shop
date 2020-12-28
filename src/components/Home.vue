@@ -1,5 +1,5 @@
 <template>
-  <!--p244-->
+  <!--p271-->
   <el-container class="home-container">
     <!--头部区域-->
     <el-header>
@@ -12,7 +12,7 @@
     <el-container>
       <!--侧边栏-->
       <el-aside :width="isCollapse ? '64px' : '200px'">
-        <div class="toggle-button" @click="toggleCollapse">1111</div>
+        <div class="toggle-button" @click="toggleCollapse">{{zoomText}}</div>
         <!--侧边栏菜单区域-->
         <el-menu background-color="#333744"
                  text-color="#fff"
@@ -60,7 +60,8 @@ export default {
         145: 'iconfont icon-baobiao'
       },
       isCollapse: false,
-      activePath: ''
+      activePath: '',
+      zoomText: '收起'
     }
   },
   created () {
@@ -80,6 +81,7 @@ export default {
       console.log(list)
     },
     toggleCollapse () {
+      this.zoomText = this.isCollapse ? '收起' : '打开'
       this.isCollapse = !this.isCollapse
     },
     saveNavState (activePath) {
