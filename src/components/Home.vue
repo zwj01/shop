@@ -1,7 +1,7 @@
 <template>
-  <!--p271-->
+  <!--p316-->
   <el-container class="home-container">
-    <!--头部区域-->
+    <!--头部区域- htms css jquery javascript Vue/react git-->
     <el-header>
       <div>
         <img src="../assets/heima.png" alt=""/>
