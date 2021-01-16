@@ -1,5 +1,5 @@
 <template>
-  <!--p316-->
+  <!--p324-->
   <el-container class="home-container">
     <!--头部区域- htms css jquery javascript Vue/react git-->
     <el-header>
@@ -57,7 +57,8 @@ export default {
         101: 'iconfont icon-shangpin',
         102: 'iconfont icon-danju',
         103: 'iconfont icon-tijikongjian',
-        145: 'iconfont icon-baobiao'
+        145: 'iconfont icon-baobiao',
+        160: 'iconfont icon-danju'
       },
       isCollapse: false,
       activePath: '',

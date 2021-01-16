@@ -35,6 +35,16 @@ Vue.filter('dataFormat', function (originVal) {
   return y + '-' + m + '-' + d + ' ' + h + ':' + mm + ':' + c
 })
 
+Vue.filter('dataFormatT', function (originVal) {
+  const dt = new Date(originVal)
+  const y = dt.getFullYear()
+  const m = (dt.getMonth() + 1 + '').padStart(2, '0')
+  const d = (dt.getDay() + 1 + '').padStart(2, '0')
+  const h = (dt.getHours() + 1 + '').padStart(2, '0')
+  const mm = (dt.getMinutes() + 1 + '').padStart(2, '0')
+  return y + '-' + m + '-' + d + ' ' + h + ':' + mm
+})
+
 new Vue({
   router,
   render: h => h(App)
